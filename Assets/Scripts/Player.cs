@@ -3,11 +3,11 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-public class Player: ScriptableObject
+public class Player
 {
     public static Dictionary<string, int> Parameters = new Dictionary<string, int>();
     public delegate void ChangeParameters();
-    public static event ChangeParameters changeParameters;
+    public static event ChangeParameters ÑhangeParameters;
 
     public Player()
     {
@@ -27,7 +27,7 @@ public class Player: ScriptableObject
     public static void AddParameter(string caption,int value)
     {
         Parameters.Add(caption,value);
-        changeParameters.Invoke();
+        ÑhangeParameters?.Invoke();
     }
 
     public static void TryRemoveParameter(string caption)
@@ -35,7 +35,7 @@ public class Player: ScriptableObject
         try
         {
             Parameters.Remove(caption);
-            changeParameters.Invoke();
+            ÑhangeParameters?.Invoke();
         }
         catch (Exception e)
         {
@@ -49,7 +49,7 @@ public class Player: ScriptableObject
         try
         {
             Parameters[_key] += _magnitude;
-            changeParameters.Invoke();
+            ÑhangeParameters?.Invoke();
         }
         catch (Exception e)
         {

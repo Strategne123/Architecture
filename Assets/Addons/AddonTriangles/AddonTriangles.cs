@@ -1,20 +1,21 @@
 using UnityEngine;
 
-public class AddonTriangles: ScriptableObject
+public class AddonTriangles
 {
     private static bool isActive=false;
 
-    public static void Init()
+    public void Init()
     {
         if (!isActive)
         {
             Debug.Log("Activate");
             isActive = true;
             Player.AddParameter("Energy", 1);
+            
         }
     }
 
-    public static void DeactivateAddon()
+    public void DeactivateAddon()
     {
         if (isActive)
         {
