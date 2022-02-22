@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebafa764ef3ba4d49be3dc91395fbe2d, type: 3}
-  m_Name: Levels
+  m_Script: {fileID: 11500000, guid: 0446648ec17180d45a61093075cff59d, type: 3}
+  m_Name: Lvl1
   m_EditorClassIdentifier: 
-  Levels:
-  - CaptionLvl: Lvl1
-  - CaptionLvl: Lvl2
+  Addons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}

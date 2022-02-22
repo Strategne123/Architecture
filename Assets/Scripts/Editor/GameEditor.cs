@@ -7,125 +7,78 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 
-[CustomEditor(typeof(GameController), true)]
+[CustomEditor(typeof(GameController))]
 [CanEditMultipleObjects]
 public class GameEditor : Editor
 {
-    private string _path;
-    private string[] _pathes;
-    private bool _isInitializate=false;
+    private GameController gameController;
     private List<object> _addonClasses = new List<object>();
-   
+    private bool isInitialize=false;
+
     private void Init()
     {
-        var gameController = (GameController)target;
-        var level = gameController.LevelsController.Levels[SceneManager.GetActiveScene().name];
-        level.Clear();
-        try
+        UnityEngine.Object[] selection = Selection.GetFiltered(typeof(GameController), SelectionMode.Assets);
+        if (selection.Length > 0)
         {
-#if UNITY_ANDROID && !UNITY_EDITOR
-            _path = path.Combine(Application.persistentDataPath + "/Addons/");
-#else
-            _path = Path.Combine(Application.dataPath + "/Addons/");
-#endif
-            _pathes = Directory.GetDirectories(_path, "*", SearchOption.TopDirectoryOnly);
-            foreach (var path in _pathes)
-            {
-                var addonName = path.Split('/').Last();
-                level.Add(addonName,false);
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.ToString());
-        }
-    }
-
-    public static Type FindType(string qualifiedTypeName)
-    {
-        Type t = Type.GetType(qualifiedTypeName);
-
-        if (t != null)
-        {
-            return t;
-        }
-        else
-        {
-            foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                t = asm.GetType(qualifiedTypeName);
-                if (t != null)
-                    return t;
-            }
-            return null;
-        }
-    }
-
-    private void TryActivateAddon(string addonName)
-    {
-        var addonType = FindType(addonName);
-        try
-        {
-            if (!_addonClasses.Contains(addonType))
-            {
-                var addonClass = Activator.CreateInstance(addonType);
-                addonType.GetMethod("Init").Invoke(addonClass, null);
-                _addonClasses.Add(addonClass);
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-    }
-
-    private void TryDeactivateAddon(string addonName)
-    {
-        var addonType = FindType(addonName);
-        foreach (var addonClass in _addonClasses)
-        {
-            if (addonClass.GetType() == addonType)
-            {
-                addonType.GetMethod("DeactivateAddon").Invoke(addonClass, null);
-                _addonClasses.Remove(addonClass);
+            if (selection[0] == null)
                 return;
-            }
+            gameController = (GameController) selection[0];
+            var addons = new List<Addon>();
+            gameController.Addons = Resources.FindObjectsOfTypeAll<Addon>().ToList();
         }
-        Console.WriteLine("Не удалось деактивировать аддон");
+    }
+
+    private void ActivateAddon(Addon addon)
+    {
+        if (!_addonClasses.Contains(addon))
+        {
+            addon.Init(gameController);
+            _addonClasses.Add(addon);
+        }
+    }
+
+    private void DeactivateAddon(Addon addon)
+    {
+        if (_addonClasses.Contains(addon))
+        {
+            addon.Deactivate(gameController);
+            _addonClasses.Remove(addon);
+        }
     }
 
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
+        if (!isInitialize)
+        {
+            Init();
+            isInitialize = true;
+        }
         serializedObject.Update();
-        if (!_isInitializate)
-        {
-            _isInitializate = true;
-            Init();
-        }
-        var gameController = (GameController)target;
-        var level = gameController.LevelsController.Levels.First().Value;
-        if (GUILayout.Button("Refresh"))
+        var gameController = (GameController) target;
+        var addons = gameController.Addons;
+        if (GUILayout.Button("Refresh Addons"))
         {
             Init();
         }
-        for (var i=0;i< level.Count;i++)
+        for (var i=0;i<addons.Count;i++)
         {
-            var key = level.ElementAt(i).Key;
-            level[key] = EditorGUILayout.Toggle(key, level[key]);
-            if (level[key])
+            GUILayout.BeginVertical();
+            addons[i].isActive = EditorGUILayout.Toggle(addons[i].Caption, addons[i].isActive);
+            if (addons[i].isActive)
             {
-                TryActivateAddon(key);
+                ActivateAddon(addons[i]);
+                addons[i].FeatureValue = EditorGUILayout.IntSlider(addons[i].FeatureCaption, addons[i].FeatureValue, addons[i].minFeatureValue, addons[i].maxFeatureValue);
             }
             else
             {
-                TryDeactivateAddon(key);
+                DeactivateAddon(addons[i]);
             }
+            GUILayout.EndVertical();
         }
         GUILayout.Space(20);
         GUILayout.BeginHorizontal();
-        foreach (var figure in gameController.FigureController.Figures)
+        foreach (var figure in gameController.Figures)
         {
             if (GUILayout.Button(figure.name))
             {
@@ -133,6 +86,11 @@ public class GameEditor : Editor
             }
         }
         GUILayout.EndHorizontal();
+        if (GUILayout.Button("AddScene"))
+        {
+            gameController.AddScene();
+        }
+        EditorUtility.SetDirty(gameController);
         serializedObject.ApplyModifiedProperties();
     }
 }

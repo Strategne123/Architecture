@@ -5,12 +5,14 @@ using Debug = UnityEngine.Debug;
 
 public class Circle : Figure
 {
-    public override void ChangeSize()
+
+    public override void ChangeSize(int _size)
     {
+        Size = _size;
         transform.localScale = new Vector3(Size*20,Size*20,0);
     }
 
-    public override void OnMouseDown()
+    public void OnMouseDown()
     {
         if (!ActiveFigure || Blocked) return;
         if (ActiveFigure.Size <= Size)
@@ -26,6 +28,6 @@ public class Circle : Figure
             ActiveFigure.transform.DOPath(path, 0.9f,PathType.CatmullRom);
             ActiveFigure = null;
         }
-        Player.TryChangeValue("Moves",1);
+        GameController.TryChangeValue("Moves",1);
     }
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class Player
 {
-    public static Dictionary<string, int> Parameters = new Dictionary<string, int>();
+    /*public static Dictionary<string, int> Parameters = new Dictionary<string, int>();
     public delegate void ChangeParameters();
     public static event ChangeParameters ÑhangeParameters;
 
@@ -72,5 +72,5 @@ public class Player
             str += _parameter.Key + ": " + _parameter.Value + " ";
         }
         return str;
-    }
+    }*/
 }
